@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Question Paper Generator</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    >
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    >
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container mt-5 mb-5">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="card-title text-center mb-4">Question Paper Generator</h1>
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                    <div class="alert alert-info">
+                      {% for message in messages %}
+                        <div>{{ message }}</div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                {% endwith %}
+                <form id="question-generator-form" enctype="multipart/form-data" method="post" action="{{ url_for('index') }}">
+
+
+                    <!-- Gemini API Key -->
+                    <div class="form-group">
+                        <label for="gemini_api"><strong>Gemini API Key</strong></label>
+                        <input type="password" class="form-control" id="gemini_api" name="gemini_api" placeholder="Enter your Gemini API key" required>
+                        <small class="form-text text-muted">Your API key will be used to access the Gemini API and will not be stored.</small>
+                    </div>
+
+                    <!-- Lecture Plan Upload -->
+                    <div class="form-group">
+                        <label for="lecture_plan_file"><strong>Upload Lecture Plan File</strong></label>
+                        <input type="file" class="form-control-file" id="lecture_plan_file" name="lecture_plan_file" accept=".pdf, .txt, .pptx" required>
+                        <small class="form-text text-muted">Accepted formats: PDF, TXT, PPTX</small>
+                    </div>
+
+                    <!-- Data Files Upload -->
+                    <div class="form-group">
+                        <label for="data_files"><strong>Upload Additional Data Files (Optional)</strong></label>
+                        <input type="file" class="form-control-file" id="data_files" name="data_files" accept=".pdf, .txt, .pptx" multiple>
+                        <small class="form-text text-muted">You can upload multiple files</small>
+                    </div>
+
+                    <!-- University Name -->
+                    <div class="form-group">
+                        <label for="university_name"><strong>University Name</strong></label>
+                        <input type="text" class="form-control" id="university_name" name="university_name" maxlength="80" placeholder="Enter university name">
+                    </div>
+
+                    <!-- Department / Branch -->
+                    <div class="form-group">
+                        <label for="department"><strong>Department / Branch</strong></label>
+                        <input type="text" class="form-control" id="department" name="department" maxlength="80" placeholder="Enter department or branch">
+                    </div>
+
+                    <!-- Subject -->
+                    <div class="form-group">
+                        <label for="subject"><strong>Subject</strong></label>
+                        <input type="text" class="form-control" id="subject" name="subject" maxlength="80" placeholder="Enter subject" >
+
+                    <!-- Academic Year / Batch -->
+                    <div class="form-group">
+                        <label for="academic_year"><strong>Academic Year / Batch</strong></label>
+                        <input type="text" class="form-control" id="academic_year" name="academic_year" maxlength="20" placeholder="e.g., 2023-2024">
+                    </div>
+
+                    <!-- Semester -->
+                    <div class="form-group">
+                        <label for="semester"><strong>Semester</strong></label>
+                        <input type="text" class="form-control" id="semester" name="semester" maxlength="20" placeholder="e.g., Spring or 6th">
+                    </div>
+
+                    <!-- One word Questions -->
+                    <div class="form-group">
+                        <label for="one_num"><strong>Number of one-word answer type questions</strong></label>
+                        <input type="one_num" class="form-control" id="one_num" name="one_num" min="1" max="50" value="2" required>
+                    </div>
+
+                    <!-- Short Questions -->
+                    <div class="form-group">
+                        <label for="short_num"><strong>Number of short-answer type questions</strong></label>
+                        <input type="short_num" class="form-control" id="short_num" name="short_num" min="1" max="50" value="3" required>
+                    </div>
+
+                    <!-- Long Questions -->
+                    <div class="form-group">
+                        <label for="long_num"><strong>Number of long descritive answer typeuestions</strong></label>
+                        <input type="long_num" class="form-control" id="long_num" name="long_num" min="1" max="50" value="5" required>
+                    </div>
+
+                    <!-- Knowledge Level -->
+                    <div class="form-group">
+                        <label for="level"><strong>Knowledge level</strong></label>
+                        <select class="form-control" id="level" name="level" required>
+                            <option value="" disabled selected>Select complexity level</option>
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                        </select>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="form-group">
+                        <label for="additional_info"><strong>Additional Instruction</strong></label>
+                        <textarea class="form-control" id="additional_info" name="additional_info" maxlength="100" rows="1" placeholder="Any additional instructions"></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-dark btn-block">Generate Questions</button>
+                </form>
+
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="text-center" style="display: none;">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only">Processing...</span>
+                    </div>
+                    <p>Question paper is being generated, time taken is directly proportional to the number of topics, so please wait...</p>
+                </div>
+
+                <!-- Generated Paper Section -->
+                {% if generated_paper %}
+                <hr class="my-5">
+                <h2 class="text-center mb-4">Generated Question Paper</h2>
+                <div class="form-group">
+                    <label for="outputTextarea"><strong>Edit Your Question Paper</strong></label>
+                    <textarea class="form-control" id="outputTextarea" name="generated_paper" rows="15">{{ generated_paper }}</textarea>
+                </div>
+                <button id="downloadBtn" class="btn btn-dark">Download</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery and Bootstrap JS for interactivity -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <!-- Popper.js for Bootstrap 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+    ></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+    // Show loading spinner on form submission
+    document.getElementById('question-generator-form').addEventListener('submit', function() {
+        document.getElementById('loadingSpinner').style.display = 'block';
+    });
+    </script>
+
+    {% if generated_paper %}
+    <!-- Download Button Functionality -->
+    <script>
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            var text = document.getElementById('outputTextarea').value;
+        
+            // Retrieve the subject name passed from the backend
+            var subject = '{{ subject }}';
+        
+            // Sanitize the subject name to remove any invalid characters for filenames
+            subject = subject.trim().replace(/[^a-z0-9_\-]/gi, '_');
+        
+            // Construct the filename with .json extension
+            var filename = subject + '_question_paper.json';
+        
+            // Rest of your code remains the same
+            // Create a blob of the JSON data
+            var blob = new Blob([text], { type: 'application/json' });
+            var element = document.createElement('a');
+            element.href = URL.createObjectURL(blob);
+            element.download = filename;
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            URL.revokeObjectURL(element.href);
+        });
+        </script>
+    {% endif %}
+</body>
+</html>

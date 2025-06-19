@@ -1,0 +1,70 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    border-radius: 8px;
+}
+
+.card-title {
+    font-weight: 600;
+    color: #343a40;
+}
+
+/* Form Labels */
+.form-group label {
+    font-weight: 500;
+}
+
+/* Buttons */
+.btn {
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 5px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Button Hover Effect */
+.btn:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Form Controls */
+.form-control,
+.form-control-file,
+.custom-select {
+    border-radius: 5px;
+}
+
+/* Placeholder Text Color */
+::placeholder {
+    color: #6c757d;
+    opacity: 1;
+}
+
+/* Alert Messages */
+.alert {
+    margin-top: 20px;
+}
+
+/* File Input Styles */
+.form-control-file {
+    margin-top: 5px;
+}
+
+/* Loading Spinner */
+#loadingSpinner {
+    margin-top: 30px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+    .btn {
+        font-size: 14px;
+    }
+}
